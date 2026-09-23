@@ -1,13 +1,26 @@
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
+import 'package:injectable/injectable.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../networking/dio_factory.dart';
+import '../utils/local_storage.dart';
 
 GetIt getIt = GetIt.instance;
 
 
-Future<void> setupGetIt()async{
+@InjectableInit(
+  initializerName: 'init',
+  preferRelativeImports: true,
+  asExtension: true,
+)
+Future<void> configureDependencies() async => await getIt.init();
 
-  getIt.registerLazySingleton<Dio>(()=>DioFactory.getDio());
+@module
+abstract class AppModule {
+  @preResolve
+  Future<SharedPreferences> get prefs => SharedPreferences.getInstance();
 
-  getIt.registerLazySingleton<RegisterRepo>(()=>RegisterRepo(getIt()));
-
+  @lazySingleton
+  Dio dio(LocalStorage localStorage) => DioFactory.getDio(localStorage);
 }
